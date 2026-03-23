@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="LAB2 Graph React - приложение с эффектами морфинга, маски и движения" />
+    <title>LAB2 Graph React</title>
+    <script>
+      // Перенаправляем на index.html с сохранением пути для React Router
+      sessionStorage.redirect = location.pathname + location.search + location.hash;
+      // Убираем базовый путь, если нужно
+      const basePath = '/LAB2_graph_React';
+      const path = location.pathname.replace(basePath, '') || '/';
+      window.location.replace(`${basePath}/index.html?redirect=${encodeURIComponent(path)}`);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <p>Перенаправление...</p>
+  </body>
+</html>
