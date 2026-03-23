@@ -42,7 +42,7 @@ const MaskPage = () => {
         style={styles.maskContainer}
       >
         <img 
-          src={getImagePath('videos/photo8.jpg')}
+          src={getImagePath('videos/photo2.jpg')}
           style={styles.backgroundImage}
           alt="Background"
         />
@@ -56,7 +56,7 @@ const MaskPage = () => {
           }}
         >
           <img 
-            src={getImagePath('videos/photo2.jpg')}
+            src={getImagePath('videos/photo8.jpg')}
             style={styles.hiddenImage}
             alt="Hidden"
           />
