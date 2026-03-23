@@ -1,6 +1,6 @@
 // src/pages/MaskPage.jsx
 import { useEffect, useRef, useState } from 'react';
-
+const baseUrl = import.meta.env.BASE_URL || '';
 const MaskPage = () => {
   const containerRef = useRef(null);
   const [mousePos, setMousePos] = useState({ x: 300, y: 200 });
@@ -42,7 +42,7 @@ const MaskPage = () => {
       >
         {/* Фоновое изображение (видимое всегда) */}
         <img 
-          src="\videos\photo1.jpg"
+          src={`${baseUrl}/videos/photo7.jpg`}
           style={styles.backgroundImage}
           alt="Background"
         />
@@ -57,7 +57,7 @@ const MaskPage = () => {
           }}
         >
           <img 
-            src="\videos\photo2.jpg"
+            src={`${baseUrl}/videos/photo2.jpg`}
             style={styles.hiddenImage}
             alt="Hidden"
           />

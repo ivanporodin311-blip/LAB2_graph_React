@@ -1,6 +1,6 @@
 // src/pages/MorphingPage.jsx
 import { useEffect, useRef } from 'react';
-
+const baseUrl = import.meta.env.BASE_URL || '';
 const MorphingPage = () => {
   const canvasRef = useRef(null);
   const sliderRef = useRef(null);
@@ -16,8 +16,8 @@ const MorphingPage = () => {
     const img2 = new Image();
     
     // Укажите пути к вашим изображениям
-    img1.src = '/videos/photo6.jpg';
-    img2.src = '/videos/photo7.jpg';
+    img1.src =`${baseUrl}/videos/photo6.jpg`;
+    img2.src = `${baseUrl}/videos/photo7.jpg`;
     
     img1.crossOrigin = 'anonymous';
     img2.crossOrigin = 'anonymous';
