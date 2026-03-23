@@ -1,10 +1,12 @@
 // src/pages/MaskPage.jsx
 import { useEffect, useRef, useState } from 'react';
-const baseUrl = import.meta.env.BASE_URL || '';
+import { useAssetPath } from '../hooks/useAssetPath';
+
 const MaskPage = () => {
   const containerRef = useRef(null);
   const [mousePos, setMousePos] = useState({ x: 300, y: 200 });
   const [isMoving, setIsMoving] = useState(false);
+  const { getPath } = useAssetPath();
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -40,14 +42,12 @@ const MaskPage = () => {
         ref={containerRef}
         style={styles.maskContainer}
       >
-        {/* Фоновое изображение (видимое всегда) */}
         <img 
-          src={`${baseUrl}/videos/photo7.jpg`}
+          src={getPath('videos/photo8.jpg')}
           style={styles.backgroundImage}
           alt="Background"
         />
         
-        {/* Спрятанное изображение с маской */}
         <div 
           style={{
             ...styles.hiddenLayer,
@@ -57,7 +57,7 @@ const MaskPage = () => {
           }}
         >
           <img 
-            src={`${baseUrl}/videos/photo2.jpg`}
+            src={getPath('videos/photo2.jpg')}
             style={styles.hiddenImage}
             alt="Hidden"
           />
@@ -77,19 +77,11 @@ const styles = {
     alignItems: 'center'
   },
   title: {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center', // Вот это нужно вместо flexDirection
-  maxWidth: '700px',
-  fontSize: '2rem',
-  marginBottom: '1rem',
-  textAlign: 'center', // Добавьте для надежности
-  width: '100%' // Чтобы занимал всю ширину
-  },
-  description: {
-    fontSize: '1.1rem',
-    marginBottom: '2rem',
-    opacity: 0.8
+    maxWidth: '700px',
+    fontSize: '2rem',
+    marginBottom: '1rem',
+    textAlign: 'center',
+    width: '100%'
   },
   maskContainer: {
     position: 'relative',
@@ -124,20 +116,6 @@ const styles = {
     height: '100%',
     objectFit: 'cover',
     display: 'block'
-  },
-  hint: {
-    position: 'absolute',
-    bottom: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    padding: '8px 16px',
-    borderRadius: '20px',
-    fontSize: '0.9rem',
-    backdropFilter: 'blur(5px)',
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap'
   }
 };
 

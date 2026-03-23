@@ -5,23 +5,24 @@ import HomePage from "./pages/HomePage";
 import MorphingPage from "./pages/MorphingPage";
 import TrajectoryPage from "./pages/TrajectoryPage";
 import MaskPage from "./pages/MaskPage";
-import Silk from "./components/Silk"; // Импортируем Silk
+import Silk from "./components/Silk";
 
 function App() {
+  // Vite автоматически подставит '/LAB2_graph_React/' при сборке
+  const basename = import.meta.env.BASE_URL;
+  
   return (
-    <BrowserRouter>
-      {/* Silk фон на весь экран */}
+    <BrowserRouter basename={basename}>
       <div style={styles.background}>
         <Silk
           speed={5}
           scale={1}
-          color="#240cd6" /*"#240cd6"*/
+          color="#240cd6"
           noiseIntensity={1.5}
           rotation={0}
         />
       </div>
       
-      {/* Контент поверх фона */}
       <div style={styles.content}>
         <Navigation />
         <Routes>
