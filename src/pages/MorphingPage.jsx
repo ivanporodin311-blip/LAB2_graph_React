@@ -1,11 +1,10 @@
 // src/pages/MorphingPage.jsx
 import { useEffect, useRef } from 'react';
-import { useAssetPath } from '../hooks/useAssetPath';
+import { getImagePath } from '../utils/paths';
 
 const MorphingPage = () => {
   const canvasRef = useRef(null);
   const sliderRef = useRef(null);
-  const { getPath } = useAssetPath();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -16,9 +15,9 @@ const MorphingPage = () => {
     const img1 = new Image();
     const img2 = new Image();
     
-    // ✅ Используем getPath для правильных путей
-    img1.src = getPath('videos/photo6.jpg');
-    img2.src = getPath('videos/photo7.jpg');
+    // ✅ Используем getImagePath
+    img1.src = getImagePath('videos/photo6.jpg');
+    img2.src = getImagePath('videos/photo7.jpg');
     
     img1.crossOrigin = 'anonymous';
     img2.crossOrigin = 'anonymous';
@@ -70,7 +69,7 @@ const MorphingPage = () => {
     };
 
     const handleCanvasClick = () => {
-      slider.value = '0.5';
+      slider.value = 0.5;
       renderMorph(0.5);
     };
 
@@ -81,7 +80,7 @@ const MorphingPage = () => {
       slider.removeEventListener('input', handleSliderChange);
       canvas.removeEventListener('click', handleCanvasClick);
     };
-  }, [getPath]);
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -136,7 +135,8 @@ const styles = {
     borderRadius: '20px',
     border: '2px solid rgba(255, 255, 255, 0.3)',
     cursor: 'pointer',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+    backgroundColor: '#000'
   },
   sliderWrapper: {
     width: '90%',

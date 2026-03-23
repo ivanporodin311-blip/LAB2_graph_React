@@ -1,12 +1,11 @@
 // src/pages/MaskPage.jsx
 import { useEffect, useRef, useState } from 'react';
-import { useAssetPath } from '../hooks/useAssetPath';
+import { getImagePath } from '../utils/paths';
 
 const MaskPage = () => {
   const containerRef = useRef(null);
   const [mousePos, setMousePos] = useState({ x: 300, y: 200 });
   const [isMoving, setIsMoving] = useState(false);
-  const { getPath } = useAssetPath();
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -43,7 +42,7 @@ const MaskPage = () => {
         style={styles.maskContainer}
       >
         <img 
-          src={getPath('videos/photo8.jpg')}
+          src={getImagePath('videos/photo8.jpg')}
           style={styles.backgroundImage}
           alt="Background"
         />
@@ -57,7 +56,7 @@ const MaskPage = () => {
           }}
         >
           <img 
-            src={getPath('videos/photo2.jpg')}
+            src={getImagePath('videos/photo2.jpg')}
             style={styles.hiddenImage}
             alt="Hidden"
           />

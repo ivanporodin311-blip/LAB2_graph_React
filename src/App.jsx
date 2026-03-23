@@ -8,7 +8,6 @@ import MaskPage from "./pages/MaskPage";
 import Silk from "./components/Silk";
 
 function App() {
-  // Vite автоматически подставит '/LAB2_graph_React/' при сборке
   const basename = import.meta.env.BASE_URL;
   
   return (
