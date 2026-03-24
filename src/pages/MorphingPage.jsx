@@ -1,109 +1,197 @@
 // src/pages/MorphingPage.jsx
-import { useEffect, useRef } from 'react';
-import { getImagePath } from '../utils/paths';
+import { useEffect, useRef, useState } from 'react';
 
 const MorphingPage = () => {
   const canvasRef = useRef(null);
-  const sliderRef = useRef(null);
+  const [isMorphing, setIsMorphing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const animationRef = useRef(null);
 
+  // Точки для звезды (5-конечная звезда)
+  const starPoints = [
+    { x: 0, y: -100 },     // верхняя точка
+    { x: 30, y: -30 },     // правая верхняя
+    { x: 95, y: -30 },     // правая
+    { x: 50, y: 10 },      // правый нижний
+    { x: 60, y: 80 },      // нижний правый
+    { x: 0, y: 40 },       // центр низ
+    { x: -60, y: 80 },     // нижний левый
+    { x: -50, y: 10 },     // левый нижний
+    { x: -95, y: -30 },    // левый
+    { x: -30, y: -30 }     // левый верхний
+  ];
+
+  // Точки для квадрата
+  const squarePoints = [
+    { x: -70, y: -70 },    // верхний левый
+    { x: 70, y: -70 },     // верхний правый
+    { x: 70, y: 70 },      // нижний правый
+    { x: -70, y: 70 },     // нижний левый
+    { x: -70, y: -70 },    // возврат к началу для замыкания
+    { x: 70, y: -70 },
+    { x: 70, y: 70 },
+    { x: -70, y: 70 },
+    { x: -70, y: -70 },
+    { x: 70, y: -70 }
+  ];
+
+  // Интерполирует точки между звездой и квадратом
+  const interpolatePoints = (star, square, t) => {
+    return star.map((point, index) => ({
+      x: point.x + (square[index].x - point.x) * t,
+      y: point.y + (square[index].y - point.y) * t
+    }));
+  };
+
+  // Рисует фигуру по точкам
+  const drawShape = (points, ctx, width, height) => {
+    if (points.length < 3) return;
+
+    ctx.beginPath();
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    ctx.moveTo(centerX + points[0].x, centerY + points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(centerX + points[i].x, centerY + points[i].y);
+    }
+    ctx.closePath();
+    
+    ctx.fillStyle = '#240cd6';
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  };
+
+  // Анимация морфинга
+  const startMorphing = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    
+    setIsMorphing(true);
+    const startTime = performance.now();
+    const duration = 2000; // 2 секунды
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const newProgress = Math.min(elapsed / duration, 1);
+      setProgress(newProgress);
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const currentPoints = interpolatePoints(starPoints, squarePoints, newProgress);
+      drawShape(currentPoints, ctx, canvas.width, canvas.height);
+
+      if (newProgress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        setIsMorphing(false);
+        animationRef.current = null;
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+  };
+
+  // Сброс в исходное состояние (звезда)
+  const resetToStar = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    
+    setIsMorphing(true);
+    const startTime = performance.now();
+    const duration = 2000;
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const newProgress = Math.max(1 - elapsed / duration, 0);
+      setProgress(newProgress);
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const currentPoints = interpolatePoints(starPoints, squarePoints, newProgress);
+      drawShape(currentPoints, ctx, canvas.width, canvas.height);
+
+      if (newProgress > 0) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        setIsMorphing(false);
+        animationRef.current = null;
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+  };
+
+  // Инициализация canvas
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width = 600;
+    canvas.height = 600;
+    
     const ctx = canvas.getContext('2d');
-    const slider = sliderRef.current;
-    const w = 550, h = 350;
+    drawShape(starPoints, ctx, canvas.width, canvas.height);
 
-    const img1 = new Image();
-    const img2 = new Image();
-    
-    // ✅ Используем getImagePath
-    img1.src = getImagePath('videos/photo6.jpg');
-    img2.src = getImagePath('videos/photo7.jpg');
-    
-    img1.crossOrigin = 'anonymous';
-    img2.crossOrigin = 'anonymous';
-
-    let imagesLoaded = 0;
-    
-    const checkImagesLoaded = () => {
-      imagesLoaded++;
-      if (imagesLoaded === 2) {
-        renderMorph(0.5);
-      }
+    // Обработка ресайза
+    const handleResize = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const currentPoints = interpolatePoints(starPoints, squarePoints, progress);
+      drawShape(currentPoints, ctx, canvas.width, canvas.height);
     };
 
-    const drawImageScaled = (img, ctx, w, h) => {
-      const scaleX = w / img.width;
-      const scaleY = h / img.height;
-      const scale = Math.min(scaleX, scaleY);
-      const newWidth = img.width * scale;
-      const newHeight = img.height * scale;
-      const x = (w - newWidth) / 2;
-      const y = (h - newHeight) / 2;
-      ctx.drawImage(img, x, y, newWidth, newHeight);
-    };
-
-    const getImageData = (img) => {
-      drawImageScaled(img, ctx, w, h);
-      return ctx.getImageData(0, 0, w, h);
-    };
-
-    const renderMorph = (t) => {
-      const dataA = getImageData(img1);
-      const dataB = getImageData(img2);
-      
-      const blended = ctx.createImageData(w, h);
-      for (let i = 0; i < dataA.data.length; i += 4) {
-        blended.data[i] = dataA.data[i] * (1 - t) + dataB.data[i] * t;
-        blended.data[i + 1] = dataA.data[i + 1] * (1 - t) + dataB.data[i + 1] * t;
-        blended.data[i + 2] = dataA.data[i + 2] * (1 - t) + dataB.data[i + 2] * t;
-        blended.data[i + 3] = 255;
-      }
-      ctx.putImageData(blended, 0, 0);
-    };
-
-    img1.onload = checkImagesLoaded;
-    img2.onload = checkImagesLoaded;
-
-    const handleSliderChange = (e) => {
-      renderMorph(parseFloat(e.target.value));
-    };
-
-    const handleCanvasClick = () => {
-      slider.value = 0.5;
-      renderMorph(0.5);
-    };
-
-    slider.addEventListener('input', handleSliderChange);
-    canvas.addEventListener('click', handleCanvasClick);
-
-    return () => {
-      slider.removeEventListener('input', handleSliderChange);
-      canvas.removeEventListener('click', handleCanvasClick);
-    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <div style={styles.container}>
-      <div style={styles.glassCard}>
-        <div style={styles.morphContainer}>
-          <canvas 
-            ref={canvasRef}
-            width="550" 
-            height="350" 
-            style={styles.canvas}
-          />
-          <div style={styles.sliderWrapper}>
-            <input 
-              ref={sliderRef}
-              type="range" 
-              min="0" 
-              max="1" 
-              step="0.01" 
-              defaultValue="0.5"
-              style={styles.slider}
-            />
-          </div>
+      
+      <div style={styles.canvasContainer}>
+        <canvas
+          ref={canvasRef}
+          style={styles.canvas}
+        />
+        
+        <div style={styles.buttonGroup}>
+          <button 
+            onClick={startMorphing}
+            disabled={isMorphing && progress !== 1}
+            style={{
+              ...styles.button,
+              ...styles.morphButton,
+              opacity: (isMorphing && progress !== 1) ? 0.5 : 1
+            }}
+          >
+            Морфинг в квадрат
+          </button>
+          
+          <button 
+            onClick={resetToStar}
+            disabled={isMorphing && progress !== 0}
+            style={{
+              ...styles.button,
+              ...styles.resetButton,
+              opacity: (isMorphing && progress !== 0) ? 0.5 : 1
+            }}
+          >
+            Вернуть звезду
+          </button>
         </div>
+        
       </div>
     </div>
   );
@@ -111,50 +199,85 @@ const MorphingPage = () => {
 
 const styles = {
   container: {
-    minHeight: '10vh',
+    
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    color: 'white',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px'
+    minHeight: '100vh'
   },
-  glassCard: {
-    maxWidth: '700px',
-    width: '100%',
+  title: {
+    fontSize: '2.5rem',
+    marginBottom: '1rem',
+    textAlign: 'center',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text'
   },
-  morphContainer: {
+  description: {
+    fontSize: '1.1rem',
+    marginBottom: '2rem',
+    opacity: 0.8,
+    textAlign: 'center'
+  },
+  canvasContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '30px',
+    gap: '1.5rem'
   },
   canvas: {
-    width: '100%',
-    maxWidth: '700px',
-    height: 'auto',
-    borderRadius: '20px',
-    border: '2px solid rgba(255, 255, 255, 0.3)',
-    cursor: 'pointer',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-    backgroundColor: '#000'
+    width: '500px',
+    height: '500px',
+    borderRadius: '10px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)'
   },
-  sliderWrapper: {
-    width: '90%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '15px'
-  },
-  slider: {
-    width: '100%',
+  progressBarContainer: {
+    width: '400px',
     height: '8px',
-    borderRadius: '50px',
-    background: 'linear-gradient(90deg, #0066ff, #ff7f50)',
-    WebkitAppearance: 'none',
-    appearance: 'none',
-    outline: 'none',
-    cursor: 'pointer'
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: '4px',
+    overflow: 'hidden'
   },
+  progressBar: {
+    height: '100%',
+    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+    transition: 'width 0.016s linear',
+    borderRadius: '4px'
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '1rem',
+
+  },
+  button: {
+    padding: '12px 24px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    fontFamily: 'inherit'
+  },
+  morphButton: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white'
+  },
+  resetButton: {
+    background: 'rgba(255, 255, 255, 0.2)',
+    color: 'white',
+    border: '1px solid rgba(255, 255, 255, 0.3)'
+  },
+  hint: {
+    fontSize: '0.9rem',
+    opacity: 0.7,
+
+    textAlign: 'center'
+  }
 };
 
 export default MorphingPage;
